@@ -98,10 +98,12 @@ def main():
     skipped = 0
 
     for _, row in df.iterrows():
-        urun_ad   = str(row.get("Urun Adi", "")).strip()
-        urun_url  = str(row.get("URL", "")).strip()
-        kategori  = str(row.get("Site Kategori", "")).strip()
-        fiyat_raw = row.get("Fiyat (TL)")
+        urun_ad    = str(row.get("Urun Adi", "")).strip()
+        urun_url   = str(row.get("URL", "")).strip()
+        kategori   = str(row.get("Site Kategori", "")).strip()
+        marka      = str(row.get("Marka", "")).strip()
+        marka      = None if marka in ("", "nan") else marka
+        fiyat_raw  = row.get("Fiyat (TL)")
         gramaj_raw = row.get("Gramaj/Hacim")
         tarih_raw  = str(row.get("Cekim Tarihi", "")).strip()
 
@@ -124,7 +126,7 @@ def main():
         except Exception:
             kazima_tarihi = None
 
-        urun_rows.append((market_id, urun_ad, urun_url, kategori))
+        urun_rows.append((market_id, urun_ad, urun_url, kategori, marka, "ŞOK"))
         fiyat_rows.append((fiyat, gramaj_degeri, gramaj_birimi, birim_fiyat, kazima_tarihi))
 
     # Urunleri toplu ekle, id'leri geri al
@@ -132,8 +134,9 @@ def main():
     urun_ids = []
     for urun, fiyat_data in zip(urun_rows, fiyat_rows):
         cur.execute(
-            """INSERT INTO urunler (market_id, urun_ad, urun_url, urun_kategori)
-               VALUES (%s, %s, %s, %s) RETURNING id""",
+            """INSERT INTO urunler (market_id, urun_ad, urun_url, urun_kategori, urun_marka, market_adi)
+               VALUES (%s, %s, %s, %s, %s, %s)
+               RETURNING id""",
             urun
         )
         urun_id = cur.fetchone()[0]
